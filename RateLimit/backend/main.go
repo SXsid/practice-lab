@@ -14,7 +14,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", handleHome)
 	mux.HandleFunc("GET /forgotPassword", forgorPassword)
-	mux.HandleFunc("GET /verify", endPointRateLimiter(VerifyOtp))
+	mux.HandleFunc("GET /verify", VerifyOtp)
 	fmt.Println("server is up at prot:8080")
 	if err := http.ListenAndServe(":8080", rateLimitMiddleware(mux)); err != nil {
 		log.Fatalf("error while starting the server")

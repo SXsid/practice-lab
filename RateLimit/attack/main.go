@@ -46,6 +46,8 @@ func sendRequest(otp string, wg *sync.WaitGroup) {
 	_, _ = io.Copy(io.Discard, res.Body)
 	if res.StatusCode == http.StatusOK {
 		fmt.Println("cracked")
+	} else {
+		fmt.Println(res)
 	}
 	_ = res.Body.Close()
 }
