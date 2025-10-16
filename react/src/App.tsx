@@ -14,6 +14,18 @@ function App() {
     desc: "",
     isComplete: false,
   });
+  const toggle = (i: Number) => {
+    setTodo((prevTodo) =>
+      prevTodo.map((todo, index) =>
+        i === index ? { ...todo, isComplete: !todo.isComplete } : todo,
+      ),
+    );
+    setFilteredTodo((prevTodo) =>
+      prevTodo.map((todo, index) =>
+        i === index ? { ...todo, isComplete: !todo.isComplete } : todo,
+      ),
+    );
+  };
   const handeInput = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentTodo((value) => {
       return { ...value, [e.target.name]: e.target.value };
@@ -23,11 +35,12 @@ function App() {
     setTodo((prevTodo) => {
       return [...prevTodo, currentTodo];
     });
+    setFilteredTodo((prvtodo) => [...prvtodo, currentTodo]);
   };
   const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const filterValue = e.target.value;
     setFilteredTodo(() => {
-      if (filterValue === "All") return todo;
+      if (filterValue === "All") return [...todo];
       return todo.filter((value) => String(value.isComplete) == e.target.value);
     });
   };
@@ -61,11 +74,16 @@ function App() {
         <option value="false">not-completed</option>
       </select>
       <div>
-        {Filtertodo?.map((value) => {
+        {Filtertodo?.map((value, i) => {
           return (
             <div>
               <h2>{value.title}</h2>
               <h3>{value.desc}</h3>
+              <input
+                type="checkbox"
+                checked={value.isComplete}
+                onChange={() => toggle(i)}
+              />
             </div>
           );
         })}
