@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Signup | GetAIJob{% endblock %}
+
+{% block content %}
+<h2>Create your account</h2>
+<form method="post" action="{% url 'signup' %}">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Create Account</button>
+</form>
+
+<p style="margin-top:1rem;">
+  Already have an account? <a href="/auth/login">Login</a>
+</p>
+{% endblock %}

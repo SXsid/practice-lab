@@ -8,6 +8,13 @@ def get_signup_page(request: HttpRequest):
     return render(request=request, template_name="user/signup.html")
 
 
+def get_django_singup_page(request: HttpRequest):
+    form = forms.createUserRequest()
+    return render(
+        request=request, template_name="user/django_signup.html", context={"form": form}
+    )
+
+
 def create_account(request: HttpRequest):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])

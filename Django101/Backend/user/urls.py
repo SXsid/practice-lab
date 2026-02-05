@@ -13,4 +13,9 @@ urlpatterns = [
         view=views.create_account,
         name="create_account",
     ),
+    path(
+        "signup/django",
+        view=views.get_django_singup_page,
+        name="Render django singup page",
+    ),
 ]
