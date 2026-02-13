@@ -10,6 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
