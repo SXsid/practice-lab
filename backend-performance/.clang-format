@@ -1,0 +1,8 @@
+---
+BasedOnStyle: LLVM
+IndentWidth: 8
+ColumnLimit: 100
+AllowShortFunctionsOnASingleLine: Empty
+IndentCaseLabels: true # ADD THIS LINE - indents case labels
+SpaceBeforeParens: ControlStatements
+MaxEmptyLinesToKeep: 2
