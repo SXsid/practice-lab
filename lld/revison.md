@@ -1,6 +1,7 @@
-# OOP & Design Patterns — Revision Notes
+# OOP & Design Patterns — Complete Revision
 
-> Not a book. Just the ideas that matter, the traps to avoid, and how they connect.
+> Not a book. The ideas that matter, the traps to avoid, how they connect.
+> Read this before solving problems. Confusion clears through building, not reading.
 
 ---
 
@@ -8,73 +9,102 @@
 
 > **Abstractions should be pulled out by pain, not pushed in by anticipation.**
 
-Don't build the factory until you have two things to put in it.
-Don't build the interface until you have two implementations.
-Write the simplest code that handles today, structured so tomorrow's change is easy.
+Ask before every abstraction:
+
+1. How often will this change?
+2. How many places touch this?
+3. What breaks if I'm wrong?
+4. Who else reads this?
+
+---
+
+## The Smell Test
+
+```
+Scattered if/else growing?         → Factory or Strategy
+One class doing too many things?   → SRP + split it
+Hard to test?                      → hidden dependency, use DI
+Adding feature breaks other code?  → wrong abstraction, use interfaces
+10 param constructor?              → Builder
+Copied code in 3 places?           → extract to base or interface
+Object behaves differently by status? → State
+Treating tree structures?          → Composite
+Two incompatible interfaces?       → Adapter
+Too many things caller must know?  → Facade
+Adding behavior without changing?  → Decorator
+One event, many reactions?         → Observer
+Action needs audit/undo/queue?     → Command
+```
 
 ---
 
 ## Phase 1 — OOP Foundations
 
-### Encapsulation
+### Object
 
-Bind data + behavior together. Hide data, expose only safe operations.
+Data + behavior bundled together. Data hidden, behavior exposed.
+
+### Encapsulation
 
 ```python
 class BankAccount:
     def __init__(self, balance):
         self.__balance = balance      # hidden
 
-    def deposit(self, amount):        # controlled access
+    def deposit(self, amount):
         if amount <= 0:
             raise ValueError("positive only")
         self.__balance += amount
+
+    def get_balance(self):
+        return self.__balance
 ```
 
-**Pitfall** — `_single` underscore is convention only. `__double` actually hides via name mangling. Java enforces with `private`. Go uses lowercase.
-
-**Key question before hiding** — who should control this data? If the answer is "only this class" → hide it.
+| Language | How                                   |
+| -------- | ------------------------------------- |
+| Python   | `__double` underscore — name mangling |
+| Java     | `private` keyword — compiler enforced |
+| Go       | lowercase field — package level       |
 
 ---
 
 ### Composition vs Inheritance
 
 ```
-HAS A  →  Composition   (Customer has BankAccount)
-IS A   →  Inheritance   (SavingsAccount is a BankAccount)
+HAS A  →  Composition   Customer HAS A BankAccount
+IS A   →  Inheritance   SavingsAccount IS A BankAccount
 ```
 
-**Composition — two types:**
+**Composition types:**
 
-- **Strong (Composition)** — child dies with parent. Customer creates Account internally.
-- **Weak (Aggregation)** — child survives parent. Account passed in from outside.
+- Strong (Composition) — child dies with parent
+- Weak (Aggregation) — child survives parent
 
-**Inheritance pitfall** — Penguin IS AN Animal but can't fly. If child can't do everything parent does → wrong tool. Use interfaces instead.
+**Inheritance pitfall** — Penguin IS AN Animal but can't fly.
+If child can't do everything parent promises → wrong tool.
 
-**Rule of thumb** — prefer composition over inheritance. Inheritance locks you in. Composition stays flexible.
+**Rule** — prefer composition. Inheritance locks you in.
 
 ---
 
 ### Interfaces — Contracts
 
-Define WHAT an object can do. Not HOW.
+WHAT an object can do. Not HOW.
 
-```python
-class PaymentProvider(ABC):
-    @abstractmethod
-    def charge(self, amount): pass
-
-    @abstractmethod
-    def refund(self, amount): pass
+```go
+type PaymentProvider interface {
+    Charge(amount float64) error
+    Refund(amount float64) error
+}
 ```
 
-| Language | Enforcement                                     |
-| -------- | ----------------------------------------------- |
-| Python   | ABC + @abstractmethod → fails on instantiation  |
-| Java     | interface + implements → compile time           |
-| Go       | implicit → if methods match, contract satisfied |
+| Language | Enforcement                                    |
+| -------- | ---------------------------------------------- |
+| Python   | ABC + @abstractmethod → fails on instantiation |
+| Java     | interface + implements → compile time          |
+| Go       | implicit → methods match = contract satisfied  |
 
-**Key insight** — depend on interfaces, not concrete types. Your OrderService shouldn't know Razorpay exists.
+**Key** — depend on interfaces not concrete types.
 
 ---
 
@@ -82,15 +112,15 @@ class PaymentProvider(ABC):
 
 ### Single Responsibility
 
-Every class has one reason to change.
+One class, one reason to change.
 
 ```
-Customer     →  owns identity data
-BankAccount  →  owns balance + money operations
-Transaction  →  owns record of what happened
+Customer     →  identity data
+BankAccount  →  balance + money operations
+Transaction  →  record of what happened
 ```
 
-**Smell** — if you describe a class using "and" → it has too many responsibilities.
+**Smell** — describing class using "and" → too many responsibilities.
 
 ---
 
@@ -98,19 +128,19 @@ Transaction  →  owns record of what happened
 
 Don't reach for dependencies. Receive them.
 
-```python
-# bad — reaches for its own dependency
-class OrderService:
-    def __init__(self):
-        self.db = DatabaseConnection()    # hidden, untestable
+```go
+// bad — reaches internally
+type OrderService struct {
+    db *PostgresDB    // concrete, unreplaceable
+}
 
-# good — receives dependency
-class OrderService:
-    def __init__(self, db: Database):     # explicit, swappable
-        self.db = db
+// good — receives interface
+type OrderService struct {
+    db Database    // interface, swappable, testable
+}
 ```
 
-**DI vs Singleton philosophy:**
+**DI vs Singleton:**
 
 ```
 Singleton  →  object finds its own dependency  (hidden)
@@ -121,22 +151,25 @@ DI         →  dependency handed to the object  (explicit)
 
 ### Composition Root
 
-One place where everything is created and wired. Your `main.go` or `main.py`.
+One place. Everything created and wired. Your `main.go`.
 
 ```go
 func main() {
     cfg    := config.New()
-    db     := postgres.NewPool(cfg.DB)
+    pool   := postgres.NewPool(cfg.DB)
     logger := logger.New(cfg.LogLevel)
 
-    userService    := user.NewService(db, logger)
-    paymentService := payment.NewService(db, logger)
+    userRepo  := postgres.NewUserRepo(pool)
+    orderRepo := postgres.NewOrderRepo(pool)
 
-    app := app.New(userService, paymentService)
+    userService  := service.NewUserService(userRepo)
+    orderService := service.NewOrderService(orderRepo, userService)
+
+    handler := api.New(orderService, userService)
 }
 ```
 
-**Pitfall** — passing entire `app` struct everywhere. Each handler should only receive what it needs.
+**Pitfall** — passing entire app struct everywhere. Each component takes only what it needs.
 
 ---
 
@@ -149,61 +182,60 @@ One instance throughout the process.
 ```python
 class Config:
     __instance = None
-
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super().__new__(cls)
         return cls.__instance
 ```
 
-**Valid use cases** — Logger, Feature flags.
-**Avoid for** — Database, Services. Create once and pass around instead.
-
-**Node.js gotcha** — module cache gives accidental singleton. NestJS `@Injectable` gives intentional singleton. Not the same thing.
+**Valid uses** — Logger, Feature flags.
+**Avoid for** — Database, Services. Create once, pass around instead.
 
 ---
 
 ### Factory
 
-One place that decides WHICH object to create. Contains the if/else so nobody else has to.
+One place decides WHICH object to create.
 
 ```go
 func NewPayment(region string) PaymentProvider {
     switch region {
     case "IN": return NewRazorpay()
     case "US": return NewStripe()
+    case "EU": return NewPaypal()
     }
 }
 ```
 
-**Key insight** — complexity doesn't disappear. Good design **contains** it in one place.
+**Key insight** — complexity doesn't disappear. Good design contains it in one place.
 
-**When implementations are totally different per env** → Interface + Factory. Each env has its own struct implementing the interface. No generic builder.
+**When implementations totally differ per env:**
+→ Interface + Factory. Each env has own struct. No generic builder.
 
 ---
 
 ### Builder
 
-When object needs many parameters. Named, explicit, validated before construction.
+Many params. Named. Explicit. Validated before construction.
 
 ```go
 db := NewDatabase().
     WithHost("localhost").
     WithSSL(true).
     WithPoolSize(100).
-    Build()        // validates here, fails fast
+    Build()        // validates here
 ```
 
-**Why not constructor** — `NewDatabase("localhost", 5432, true, 100, 30, 3)` — what is 100? what is 30? Wrong order = silent bug.
+**Why not constructor** — positional args = silent wrong-order bugs.
 
 **Factory vs Builder:**
 
 ```
-Factory  →  WHICH object/config     (based on condition)
-Builder  →  HOW to construct        (step by step, validated)
+Factory  →  WHICH object      (which condition)
+Builder  →  HOW to construct  (step by step, validated)
 ```
 
-They compose — Factory decides which values, Builder constructs safely.
+They compose — Factory picks values, Builder constructs safely.
 
 ---
 
@@ -219,52 +251,52 @@ class LoggedPayment(PaymentProvider):
         self.__provider = provider
 
     def charge(self, amount):
-        log("before charge")
+        log("before")
         self.__provider.charge(amount)
-        log("after charge")
+        log("after")
 
     def refund(self, amount):
         self.__provider.refund(amount)    # passthrough
 ```
 
-Stack them in any order:
+Stack in any order:
 
 ```python
 razorpay = RazorpayPayment()
-retry    = RetryPayment(razorpay, retries=3)
-logged   = LoggedPayment(retry)
+retried  = RetryPayment(razorpay, retries=3)
+logged   = LoggedPayment(retried)
 ```
 
-**Real world** — HTTP middleware chains, Python @decorators, Java @Transactional.
+**Real world** — HTTP middleware, @decorators, @Transactional.
 
 ---
 
 ### Adapter
 
-Different interface. Translates between two worlds. Neither side changes.
+Different interface. Translates. Neither side changes.
 
 ```python
 class SendGridAdapter(Notifier):
     def __init__(self, client: SendGridClient):
         self.__client = client
 
-    def send(self, to: str, message: str):     # your interface
-        self.__client.send_email(              # their interface
+    def send(self, to: str, message: str):      # your interface
+        self.__client.send_email(               # their interface
             from=DEFAULT_FROM,
-            to=[to],                           # string → list
+            to=[to],                            # str → list
             subject=DEFAULT_SUBJECT,
             body=message,
             is_html=False
         )
 ```
 
-**Real world** — third party SDK wrappers, legacy code bridges, microservice protocol translation.
+**Real world** — third party SDK wrappers, legacy bridges.
 
 ---
 
 ### Facade
 
-Hides multiple interfaces behind one simple one. Caller doesn't know what's inside.
+Hides many interfaces behind one simple one.
 
 ```python
 class OrderFacade:
@@ -274,23 +306,43 @@ class OrderFacade:
         payment = self.payment.charge(user, amount)
         order   = self.order_repo.create(user, item_id, payment)
         self.notifier.send(user.email, "confirmed!")
-        self.inventory.deduct(item_id)
         return order
-
-# handler just does:
-order = order_facade.place_order(user_id, item_id, amount)
 ```
 
-**Handler job** — parse, validate, return response. Not orchestrate.
+Handler just calls one thing. Doesn't know what's inside.
 
 ---
 
-### Three Wrappers — Never Confuse Again
+### Composite
+
+Individual objects and groups treated uniformly. Tree structures.
+
+```python
+class FileSystemItem(ABC):
+    @abstractmethod
+    def get_size(self) -> int: pass
+
+class File(FileSystemItem):
+    def get_size(self) -> int:
+        return self.__size
+
+class Folder(FileSystemItem):
+    def get_size(self) -> int:
+        return sum(child.get_size() for child in self.__children)
+```
+
+No `isinstance` checks. Infinite nesting works automatically.
+
+**Real world** — file systems, UI components, org charts, HTML DOM.
+
+---
+
+### Three Wrappers — Never Confuse
 
 ```
-Decorator  →  same interface    + adds behavior      (LoggedPayment)
-Adapter    →  different interface + translates       (SendGridAdapter)
-Facade     →  hides many interfaces behind one       (OrderFacade)
+Decorator  →  same interface    + adds behavior      LoggedPayment
+Adapter    →  different interface + translates        SendGridAdapter
+Facade     →  hides many interfaces behind one        OrderFacade
 ```
 
 ---
@@ -311,18 +363,18 @@ class SortByDate(SortStrategy):
         return sorted(orders, key=lambda o: o.date)
 ```
 
-**Use class when** — algorithm needs state or config.
-**Use plain function when** — algorithm is simple and stateless.
-
-**Smell** — growing if/else choosing between algorithms → Strategy.
+**Use class** — algorithm needs state or config.
+**Use function** — algorithm is simple and stateless.
 
 **Always combine with DI** — inject strategy, don't reach for it.
+
+**Smell** — growing if/else choosing between algorithms → Strategy.
 
 ---
 
 ### Observer
 
-Publisher fires event. Subscribers react. Publisher doesn't know subscribers exist.
+Publisher fires event. Subscribers react independently. Publisher doesn't know subscribers exist.
 
 ```python
 class EventBus:
@@ -330,38 +382,35 @@ class EventBus:
         for handler in self.listeners[event]:
             handler(data)
 
-# publisher
 event_bus.publish("ORDER_PLACED", order)
-
-# subscribers — independent, decoupled
 event_bus.subscribe("ORDER_PLACED", email_handler)
 event_bus.subscribe("ORDER_PLACED", inventory_handler)
 ```
 
-**Error handling** — db.save failure = stop everything. Email failure = retry independently. Eventual consistency.
+**Error handling:**
 
-**Type safety** — typed event structs, not generic maps. Schema Registry in Kafka for cross-service events.
+```
+db.save fails    →  stop everything, non negotiable
+email fails      →  retry independently
+inventory fails  →  retry independently
+```
+
+**Type safety** — typed event structs not generic maps.
 
 **Scale progression:**
 
 ```
-In-memory EventBus   →  single process
-RabbitMQ / SQS       →  across services, async retries
-Kafka                →  massive scale, event replay
-Temporal             →  complex workflows, state management
+In-memory EventBus  →  single process
+RabbitMQ / SQS      →  across services, async retries
+Kafka               →  massive scale, event replay
+Temporal            →  complex workflows, state
 ```
 
 ---
 
 ### Command
 
-Wraps a request as an object. Enables audit, undo, queue without caller knowing.
-
-```
-Factory          →  WHICH command to create
-Command          →  WHAT the action does + how to undo
-CommandExecutor  →  HOW to run, audit, queue, undo
-```
+Wraps request as object. Enables audit, undo, queue.
 
 ```python
 class SuspendUserCommand(Command):
@@ -376,75 +425,233 @@ class CommandExecutor:
         audit_log.save(command.name())
 
     def undo_last(self):
-        command = self.history.pop()
-        command.undo()
+        self.history.pop().undo()
 ```
 
-**Real world** — job queues (Celery, Sidekiq), Git commits, DB migrations (up/down), admin panels.
+**Responsibilities:**
+
+```
+Factory          →  WHICH command
+Command          →  WHAT it does + how to undo
+CommandExecutor  →  HOW to run, audit, queue, undo
+```
+
+**Real world** — job queues, Git commits, DB migrations, admin panels.
 
 ---
 
-## How Patterns Compose in Real Systems
+### State
+
+Object changes behavior when internal state changes. Object manages its own transitions.
+
+```python
+class PendingState(OrderState):
+    def confirm(self, order):
+        order.state = ConfirmedState()    # transitions itself
+
+    def cancel(self, order):
+        order.state = CancelledState()
+
+    def ship(self, order):
+        raise Exception("can't ship pending order")
+
+class Order:
+    def __init__(self):
+        self.state = PendingState()
+
+    def confirm(self): self.state.confirm(self)
+    def cancel(self):  self.state.cancel(self)
+    def ship(self):    self.state.ship(self)
+```
+
+**State vs Strategy:**
+
+```
+Strategy  →  behavior swapped by CALLER
+State     →  behavior swapped by OBJECT ITSELF
+```
+
+**Real world** — order status, payment lifecycle, TCP connection, traffic lights.
+
+---
+
+## Phase 6 — Architecture Patterns
+
+### Repository
+
+Hides DB behind interface. Service knows nothing about SQL.
+
+```go
+// defined by consumer — service owns the interface
+type OrderRepository interface {
+    GetByID(ctx context.Context, id string) (*Order, error)
+    ListByUser(ctx context.Context, userID string) ([]*Order, error)
+    Create(ctx context.Context, order *Order) error
+    UpdateStatus(ctx context.Context, id string, status string) error
+}
+
+// implementation — just satisfies interface
+type PostgresOrderRepository struct {
+    pool *pgxpool.Pool
+}
+```
+
+**Interface lives near consumer not implementation** — Go philosophy.
+
+**Interface segregation** — UserService only gets the OrderRepo methods it needs. Not the full interface.
+
+**Testing:**
+
+```go
+type MockOrderRepository struct{}
+func (m *MockOrderRepository) Create(...) error { return nil }
+// no postgres, no docker, instant tests
+```
+
+---
+
+### Service Layer
+
+Business logic home. Between handler and repository.
+
+```
+Handler     →  parse, validate input, return response
+Service     →  business rules, orchestrate repos + services
+Repository  →  DB read/write, no business logic
+Domain      →  pure structs, no logic, no DB, no HTTP
+```
+
+```go
+// ✅ correct
+func (s *OrderService) PlaceOrder(ctx context.Context, userID string, amount float64) (*Order, error) {
+    if amount <= 0 {
+        return nil, errors.New("amount must be positive")    // business rule
+    }
+    user, err := s.userRepo.GetByID(ctx, userID)            // delegates to repo
+    // ...
+}
+
+// ❌ wrong — business logic in handler
+// ❌ wrong — SQL in service
+// ❌ wrong — HTTP status codes in service
+```
+
+**Who owns what:**
+
+```
+Single entity operations      →  Service
+Cross entity reads             →  Service (GetUserOrders lives in OrderService)
+Cross entity combined data     →  Facade (UserDashboard = user + orders)
+Cross service mutations        →  Facade or Saga
+```
+
+---
+
+## Full Architecture — Everything Connected
 
 ```
 HTTP Request
     │
     ▼
-Handler              parse + validate only (Facade consumer)
+Handler                    parse + validate only
     │
     ▼
-CommandFactory       WHICH command (Factory)
+Facade (optional)          orchestrate across services
     │
     ▼
-CommandExecutor      HOW to run (audit, queue, undo)
+Service                    business logic
     │
-    ▼
-Command              WHAT to do (Strategy per action)
+    ├── Repository          DB interface
+    │       └── PostgresRepo  actual SQL
     │
-    ├── Service      orchestrates business logic (Facade)
-    │       │
-    │       └── Repository   talks to DB (next)
+    ├── PaymentProvider     external interface
+    │       └── StripeAdapter
     │
-    └── EventBus     fires events (Observer)
-            │
+    └── EventBus            fire and forget
             ├── EmailHandler
             ├── InventoryHandler
             └── AnalyticsHandler
 ```
 
+Every arrow = interface. Nothing concrete except at edges.
+
 ---
 
-## The Questions to Ask Before Any Abstraction
+## Patterns Working Together — Real Example
 
 ```
-1. How often will this change?
-   rarely     → keep it simple
-   frequently → abstract, contain the change
-
-2. How many places touch this?
-   one place  → inline it
-   many places → extract it
-
-3. What breaks if I'm wrong?
-   low risk   → ship it, refactor later
-   high risk  → design carefully now
-
-4. Who else reads this?
-   just me    → maybe okay
-   team       → optimise for readability
+POST /admin/actions {"type": "suspend_user"}
+    │
+    ▼
+Handler                     parse request
+    │
+    ▼
+CommandFactory              WHICH command  (Factory)
+    │
+    ▼
+CommandExecutor             HOW to run     (audit, undo, queue)
+    │
+    ▼
+SuspendUserCommand          WHAT to do     (Command)
+    │
+    ▼
+UserService                 business rules (Service Layer)
+    │
+    ├── UserRepository      DB ops         (Repository)
+    └── EventBus            notify others  (Observer)
+            └── AuditHandler              (Strategy per handler)
 ```
 
 ---
 
 ## Common Mistakes
 
-| Mistake                                 | Fix                                             |
-| --------------------------------------- | ----------------------------------------------- |
-| Passing entire app struct everywhere    | Each handler takes only what it needs           |
-| Singleton for everything                | Singleton for logger only, pass everything else |
-| Inheritance when behavior differs       | Interface + Composition                         |
-| if/else scattered across files          | Factory — contain it in one place               |
-| Reaching for dependencies inside class  | Inject from outside — DI                        |
-| Handler orchestrating multiple services | Facade handles orchestration                    |
-| Generic untyped events                  | Typed event structs                             |
-| Building abstractions upfront           | Wait for the pain, then extract                 |
+| Mistake                                | Fix                                     |
+| -------------------------------------- | --------------------------------------- |
+| Passing entire app struct              | Each component takes only what it needs |
+| Singleton for everything               | Singleton for logger only               |
+| Inheritance when behavior differs      | Interface + Composition                 |
+| if/else scattered across files         | Factory — one place                     |
+| Reaching for dependencies inside class | DI — receive them                       |
+| Handler orchestrating services         | Facade handles orchestration            |
+| Generic untyped events                 | Typed event structs                     |
+| isinstance checks everywhere           | Composite — shared interface            |
+| Status checked in every method         | State pattern                           |
+| Building abstractions upfront          | Wait for pain, then extract             |
+| Interface near implementation          | Interface near consumer (Go)            |
+| Full repo interface everywhere         | Interface segregation                   |
+
+---
+
+## Language Comparison — Same Idea Different Clothes
+
+| Concept          | Python                   | Java              | Go               |
+| ---------------- | ------------------------ | ----------------- | ---------------- |
+| Hide data        | `__field`                | `private`         | lowercase        |
+| Interface        | ABC + abstractmethod     | interface         | implicit         |
+| Enforce contract | runtime                  | compile time      | compile time     |
+| Composition      | object in `self`         | object in field   | struct embedding |
+| DI container     | manual / FastAPI Depends | Spring @Autowired | manual in main   |
+| Singleton        | module cache / **new**   | Spring @Bean      | sync.Once        |
+
+---
+
+## What Comes From Experience, Not Patterns
+
+```
+These you learn by shipping and breaking things:
+- When to use eventual consistency
+- Race conditions and concurrency
+- Cache invalidation strategies
+- Database performance
+- Service mesh complexity
+- When NOT to use microservices
+```
+
+Patterns give you vocabulary and structure.
+Experience gives you judgment.
+Both matter. Neither replaces the other.
+
+## BLOG
+
+> https://medium.com/@milon.istiyak/top-10-most-used-design-patterns-in-low-level-design-lld-a15e8bb449c6
