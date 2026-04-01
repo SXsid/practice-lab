@@ -3,7 +3,16 @@ package domain
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/sethvargo/go-retry"
+)
+
+type TicketStatus string
+
+const (
+	Active TicketStatus = "active"
+	Unpaid TicketStatus = "unpaid"
+	Paid   TicketStatus = "paid"
+	Close  TicketStatus = "close"
 )
 
 type Ticket struct {
@@ -12,33 +21,50 @@ type Ticket struct {
 	vehical  *Vehical
 	starTime time.Time
 	endTime  time.Time
-	ownerId  string
 	amount   float64
+	status   TicketStatus
 }
 
-// type Ticket interface {
-// 	VerifyTicket(ownerId string) bool
-// Amount() float64
-// 	VehicalDetail() Vehical
-// 	SpotDetail() Spot
-// TimeitTook()
-// }
-
-func NewTicket(spot *Spot, vehcial *Vehical, ownerId string) *Ticket {
+func NewTicket(id string, spot *Spot, vehcial *Vehical) *Ticket {
 	return &Ticket{
-		id:       uuid.NewString(),
+		id:       id,
 		spot:     spot,
 		vehical:  vehcial,
 		starTime: time.Now(),
-		ownerId:  ownerId,
+		status:   Active,
 	}
 }
 
 func (t *Ticket) VerifyTicket(ownerId string) bool {
-	return t.ownerId == ownerId
+	return t.vehical.OwnerId() == ownerId
+}
+
+func (t *Ticket) Status() TicketStatus {
+	return t.status
 }
 
 func (t *Ticket) Amount() float64 {
-	t.endTime = time.Now()
-	return  t.spot.Price()*
+	return t.amount
+}
+
+func (t *Ticket) GeneratBill() {
+	end := time.Now()
+	t.endTime = end
+	diff := end.Sub(t.starTime).Hours()
+	amount := t.spot.Price() * diff
+	t.amount = amount
+	t.status = Unpaid
+}
+
+func (t *Ticket) Paid() {
+	t.status = Paid
+}
+
+func (t *Ticket) Close() {
+	t.status = Close
+	t.spot.ChangeStatus(true)
+}
+
+func (t *Ticket) Spot() *Spot {
+	return t.spot
 }

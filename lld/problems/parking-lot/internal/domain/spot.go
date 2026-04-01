@@ -9,6 +9,7 @@ const (
 )
 
 type Spot struct {
+	id          string
 	spotType    SpotType
 	isAllocated bool
 	lenght      int
@@ -60,4 +61,8 @@ func (s *Spot) IsCompatible(vehicleType VehicalType) bool {
 	default:
 		return false
 	}
+}
+
+func (s *Spot) Id() string {
+	return s.id
 }
