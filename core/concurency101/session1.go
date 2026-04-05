@@ -19,6 +19,7 @@ func NewAccount(amount float64, id string) *Account {
 }
 
 func (a *Account) Balance() float64 {
+	// INFO: this lock is need cuase it gurante data is right in thsi exact moment
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	return a.amount
