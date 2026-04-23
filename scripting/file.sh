@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 
 FilePath=$1
 if [ -z "$FilePath" ] ;then 
