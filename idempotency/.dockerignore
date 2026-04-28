@@ -1,0 +1,45 @@
+
+# Dependency directories
+# Generally, you want to download dependencies inside the container 
+# using 'go mod download' to leverage Docker caching.
+vendor/
+
+# Binary & Build artifacts
+bin/
+out/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Testing and Coverage
+*_test.go
+.cover/
+coverage.txt
+coverage.out
+
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Docker and CI/CD
+Dockerfile
+.dockerignore
+.github/
+.gitlab-ci.yml
+docker-compose*.yml
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Environment and Secrets
+.env
+.env.*
+! .env.example

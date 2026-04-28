@@ -1,0 +1,19 @@
+FROM golang:1.25-alpine AS builder
+RUN adduser -D -u 1000 -g "" appuser
+WORKDIR /app
+COPY go.sum go.mod ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o server ./cmd/server
+
+
+FROM  scratch
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+USER appuser
+COPY --from=builder /app/server /server
+EXPOSE 8080
+ENTRYPOINT [ "/server" ]
+CMD [ "-port","8080" ]
+
