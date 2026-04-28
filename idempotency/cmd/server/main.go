@@ -10,19 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/v5/middleware"
+	"github/SXsid/learn-idempotency/internal/app"
 )
 
 func main() {
-	router := chi.NewRouter()
-
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("helo word"))
-	})
 	port := flag.Int("port", 8080, "port at which app is running")
 	flag.Parse()
 	server := http.Server{
@@ -30,7 +21,7 @@ func main() {
 		IdleTimeout:  1 * time.Minute,
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  5 * time.Second,
-		Handler:      router,
+		Handler:      app.NewApplicaton(),
 	}
 	go func() {
 		fmt.Printf("server is up and running at %s \n", server.Addr)
