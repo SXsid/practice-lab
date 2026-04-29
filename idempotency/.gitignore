@@ -1,6 +1,8 @@
 
 .env
+
 database
+storeData
 *.exe
 *.exe~
 *.dll

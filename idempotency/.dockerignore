@@ -43,3 +43,5 @@ docker-compose*.yml
 .env
 .env.*
 ! .env.example
+database
+storeData

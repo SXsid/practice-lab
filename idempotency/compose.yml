@@ -9,3 +9,37 @@ services:
       - .env
     container_name: server
     restart: unless-stopped
+  db:
+    image: postgres:latest
+    container_name: my_db
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=sid
+      - POSTGRES_PASSWORD=sid
+      - POSTGRES_DB=idempotency
+    volumes:
+      - ./database:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sid -d idempotency  "]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - ./storeData:/data
+    command: >
+      redis-server
+      --requirepass sid
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a sid", "ping"]
