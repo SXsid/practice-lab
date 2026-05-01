@@ -3,8 +3,8 @@ package domain
 import "time"
 
 type (
-	CustomerId string
-	OrderId    string
+	CustomerID string
+	OrderID    string
 	Currency   string
 )
 
@@ -18,8 +18,8 @@ const (
 
 type Payment struct {
 	ID               string
-	CustomerID       CustomerId
-	OrderID          OrderId
+	CustomerID       CustomerID
+	OrderID          OrderID
 	Amount           int64
 	Currency         Currency
 	ProviderChargeID *string
