@@ -17,7 +17,7 @@ type Application struct {
 	rdc    *redis.Client
 }
 
-func NewApplicaton() http.Handler {
+func NewApplicaton() *Application {
 	ctx := context.Background()
 	config := NewConfig()
 	logger := NewLogger(config.LogLevel)
@@ -39,5 +39,10 @@ func NewApplicaton() http.Handler {
 		db:     db,
 		rdc:    rdc,
 	}
-	return app.NewRouter()
+	return app
+}
+
+func (app *Application) Close() {
+	app.db.Close()
+	app.rdc.Close()
 }

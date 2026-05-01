@@ -16,12 +16,14 @@ import (
 func main() {
 	port := flag.Int("port", 8080, "port at which app is running")
 	flag.Parse()
+	application := app.NewApplicaton()
+	defer application.Close()
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%d", *port),
 		IdleTimeout:  1 * time.Minute,
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  5 * time.Second,
-		Handler:      app.NewApplicaton(),
+		Handler:      app.NewRouter(application),
 	}
 	go func() {
 		fmt.Printf("server is up and running at %s \n", server.Addr)

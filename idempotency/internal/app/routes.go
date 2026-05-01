@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func (a *Application) NewRouter() *chi.Mux {
+func NewRouter(app *Application) *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
