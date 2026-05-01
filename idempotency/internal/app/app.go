@@ -3,18 +3,23 @@ package app
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
+
+	"github/SXsid/learn-idempotency/internal/handler"
+	"github/SXsid/learn-idempotency/internal/provider"
+	"github/SXsid/learn-idempotency/internal/repository/postgres"
+	"github/SXsid/learn-idempotency/internal/service"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 )
 
 type Application struct {
-	config *Config
-	logger *Logger
-	db     *pgxpool.Pool
-	rdc    *redis.Client
+	config     *Config
+	logger     *Logger
+	db         *pgxpool.Pool
+	rdc        *redis.Client
+	payHandler *handler.PaymentHandler
 }
 
 func NewApplicaton() *Application {
@@ -33,11 +38,16 @@ func NewApplicaton() *Application {
 		os.Exit(1)
 	}
 	fmt.Println("redis connecteed.")
+	payRepo := postgres.NewPaymentRepo(db)
+	payProvider := provider.NewMockPayProvider()
+	payService := service.NewPaymentService(payRepo, payProvider)
+	payHandler := handler.NewPaymentHandler(payService)
 	app := &Application{
-		config: config,
-		logger: logger,
-		db:     db,
-		rdc:    rdc,
+		config:     config,
+		logger:     logger,
+		db:         db,
+		rdc:        rdc,
+		payHandler: payHandler,
 	}
 	return app
 }
