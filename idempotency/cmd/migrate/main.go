@@ -7,14 +7,14 @@ import (
 
 	"github/SXsid/learn-idempotency/migrations"
 
-	_ "github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 )
 
 func main() {
 	DSN := os.Getenv("DSN")
 	if DSN == "" {
-		panic("")
+		panic("No DSN String")
 	}
 	conn, err := sql.Open("pgx", DSN)
 	if err != nil {

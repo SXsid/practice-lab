@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github/SXsid/learn-idempotency/internal/domain"
+
 	"github.com/google/uuid"
 )
 
@@ -18,12 +20,15 @@ func NewMockPayProvider() *MockProvider {
 	}
 }
 
-func (p *MockProvider) CreateOrder(ctx context.Context, paymentID string, amount int64) (string, error) {
+func (p *MockProvider) CreateOrder(ctx context.Context, Currency domain.Currency, amount int64) (string, error) {
 	p.mu.Lock()
 	p.callCount++
 	p.mu.Unlock()
 	uuid, err := uuid.NewRandom()
-	return uuid.String(), err
+	if err != nil {
+		return "", domain.ErrProviderDown
+	}
+	return uuid.String(), nil
 }
 
 func (p *MockProvider) Refund(ctx context.Context, orderId string, ProviderId string) error {
@@ -31,5 +36,7 @@ func (p *MockProvider) Refund(ctx context.Context, orderId string, ProviderId st
 }
 
 func (p *MockProvider) CallCount() int {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	return p.callCount
 }

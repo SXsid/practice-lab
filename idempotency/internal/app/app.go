@@ -7,7 +7,7 @@ import (
 
 	"github/SXsid/learn-idempotency/internal/handler"
 	"github/SXsid/learn-idempotency/internal/provider"
-	"github/SXsid/learn-idempotency/internal/repository/postgres"
+	"github/SXsid/learn-idempotency/internal/repository/mock"
 	"github/SXsid/learn-idempotency/internal/service"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -38,7 +38,7 @@ func NewApplicaton() *Application {
 		os.Exit(1)
 	}
 	fmt.Println("redis connecteed.")
-	payRepo := postgres.NewPaymentRepo(db)
+	payRepo := mock.NewMockRepo()
 	payProvider := provider.NewMockPayProvider()
 	payService := service.NewPaymentService(payRepo, payProvider)
 	payHandler := handler.NewPaymentHandler(payService)

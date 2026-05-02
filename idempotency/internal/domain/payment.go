@@ -12,8 +12,16 @@ type PaymentStatus string
 
 const (
 	Pending PaymentStatus = "pending"
-	Success PaymentStatus = "success"
+	Success PaymentStatus = "suceeded"
 	Failed  PaymentStatus = "failed"
+)
+
+type PaymentIdemPotencyStatus string
+
+const (
+	Miss     PaymentIdemPotencyStatus = "miss"
+	InFlight PaymentIdemPotencyStatus = "inFlight"
+	Hit      PaymentIdemPotencyStatus = "hit"
 )
 
 type Payment struct {
@@ -26,6 +34,11 @@ type Payment struct {
 	Status           PaymentStatus
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
+}
+
+type PaymentIdempotency struct {
+	Id     string
+	status PaymentIdemPotencyStatus
 }
 
 func (p *Payment) GetAmount() float64 {
