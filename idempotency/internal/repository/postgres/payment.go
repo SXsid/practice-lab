@@ -19,11 +19,11 @@ func NewPaymentRepo(pgx *pgxpool.Pool) *PaymentRepo {
 	}
 }
 
-func (r *PaymentRepo) GetById(ctx context.Context, ID string) (*domain.Payment, error) {
+func (r *PaymentRepo) GetByID(ctx context.Context, ID string) (*domain.Payment, error) {
 	return nil, nil
 }
 
-func (r *PaymentRepo) GetByOrderId(ctx context.Context, orderID domain.OrderID) (*domain.Payment, error) {
+func (r *PaymentRepo) GetByOrderID(ctx context.Context, orderID domain.OrderID) (*domain.Payment, error) {
 	return nil, nil
 }
 
@@ -31,7 +31,7 @@ func (r *PaymentRepo) Create(ctx context.Context, payment domain.Payment) (*doma
 	return nil, nil
 }
 
-func (r *PaymentRepo) UpdateProviderId(ctx context.Context, ID string, ProviderChargeID string, UpdatedAt time.Time) error {
+func (r *PaymentRepo) UpdateProviderID(ctx context.Context, ID string, ProviderChargeID string, UpdatedAt time.Time) error {
 	return nil
 }
 

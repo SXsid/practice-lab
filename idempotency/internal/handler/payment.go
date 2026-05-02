@@ -8,7 +8,7 @@ import (
 )
 
 type PaymentService interface {
-	InitPayment(ctx context.Context, customerID domain.CustomerID, amount int64, Currency domain.Currency) (string, error)
+	InitPayment(ctx context.Context, idempotencyID, requestHash string, customerID domain.CustomerID, amount int64, Currency domain.Currency) (string, error)
 	HandleWebHook(ctx context.Context, OrderId string) error
 	InitRefund(ctx context.Context, paymentID string) error
 	ListPaymentByUser(ctx context.Context, customerID domain.CustomerID) ([]*domain.Payment, error)

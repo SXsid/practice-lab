@@ -7,8 +7,9 @@ import (
 
 	"github/SXsid/learn-idempotency/internal/handler"
 	"github/SXsid/learn-idempotency/internal/provider"
-	"github/SXsid/learn-idempotency/internal/repository/mock"
+	"github/SXsid/learn-idempotency/internal/repository/postgres"
 	"github/SXsid/learn-idempotency/internal/service"
+	"github/SXsid/learn-idempotency/internal/store"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -37,10 +38,11 @@ func NewApplicaton() *Application {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	redisStore := store.NewRedisStore(rdc)
 	fmt.Println("redis connecteed.")
-	payRepo := mock.NewMockRepo()
-	payProvider := provider.NewMockPayProvider()
-	payService := service.NewPaymentService(payRepo, payProvider)
+	payRepo := postgres.NewPaymentRepo(db)
+	payProvider := provider.NewRazopayClient()
+	payService := service.NewPaymentService(payRepo, payProvider, redisStore)
 	payHandler := handler.NewPaymentHandler(payService)
 	app := &Application{
 		config:     config,
