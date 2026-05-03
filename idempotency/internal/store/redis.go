@@ -19,8 +19,8 @@ func NewRedisStore(rdc *redis.Client) *Store {
 	}
 }
 
-func (s *Store) Get(ctx context.Context, key string) (domain.IdempotencyRecord, error) {
-	return domain.IdempotencyRecord{}, nil
+func (s *Store) Get(ctx context.Context, key string) (*domain.IdempotencyRecord, error) {
+	return nil, nil
 }
 
 func (s *Store) Claim(ctx context.Context, key string, requestHash string, ttl time.Duration) (bool, error) {

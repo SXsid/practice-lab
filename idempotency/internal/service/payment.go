@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github/SXsid/learn-idempotency/internal/domain"
@@ -27,34 +28,21 @@ type PaymentProvider interface {
 type PaymentService struct {
 	repo     PaymentRepo
 	provider PaymentProvider
-	idemp    IdempotencyService
 }
 
-func NewPaymentService(repo PaymentRepo, provider PaymentProvider, idemp IdempotencyService) *PaymentService {
+func NewPaymentService(repo PaymentRepo, provider PaymentProvider) *PaymentService {
 	return &PaymentService{
 		repo:     repo,
 		provider: provider,
-		idemp:    idemp,
 	}
 }
 
-func (s *PaymentService) InitPayment(ctx context.Context, idempotencyID, requestHash string, customerID domain.CustomerID, amount int64, Currency domain.Currency) (string, error) {
-	// for nwo
-	idemRecord, err := s.idemp.Get(ctx, idempotencyID)
-	if idemRecord != nil {
-		return string(idemRecord.Response), nil
-	}
-	claimed, err := s.idemp.Claim(ctx, idempotencyID, requestHash, time.Minute*10)
-	if err != nil {
-		return "", err
-	}
-	if !claimed {
-		return "", domain.ErrRequestInFlight
-	}
+var count int = 0
 
+func (s *PaymentService) InitPayment(ctx context.Context, customerID domain.CustomerID, amount int64, Currency domain.Currency) (string, error) {
+	count += 1
 	orderId, err := s.provider.CreateOrder(ctx, Currency, amount)
 	if err != nil {
-		s.idemp.Delete(ctx, idempotencyID)
 		return "", err
 	}
 	now := time.Now()
@@ -71,11 +59,7 @@ func (s *PaymentService) InitPayment(ctx context.Context, idempotencyID, request
 	if _, err = s.repo.Create(ctx, paymentStruct); err != nil {
 		return "", err
 	}
-	if err := s.idemp.Finalise(ctx, idempotencyID, []byte(orderId), 201); err != nil {
-		s.idemp.Delete(ctx, idempotencyID)
-		return "", err
-	}
-	return orderId, nil
+	return fmt.Sprintf("ordeId:%s  service Call:%d", orderId, count), nil
 }
 
 func (s *PaymentService) HandleWebHook(ctx context.Context, OrderId string) error {

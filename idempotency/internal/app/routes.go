@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	cutomeMiddleware "github/SXsid/learn-idempotency/internal/middleware"
 )
 
 func NewRouter(app *Application) *chi.Mux {
@@ -39,9 +40,10 @@ func V1Routes(app *Application) http.Handler {
 
 func PayRotues(app *Application) http.Handler {
 	r := chi.NewRouter()
+	r.Use(cutomeMiddleware.IdempotecyMiddleware(app.idem))
+	r.Get("/all", app.payHandler.AllPayment)
 	r.Post("/init", app.payHandler.InitPayment)
 	r.Patch("/webhook", app.payHandler.ProcessWebHook)
 	r.Post("/refund", app.payHandler.InitiateRefund)
-	r.Get("/all", app.payHandler.AllPayment)
 	return r
 }

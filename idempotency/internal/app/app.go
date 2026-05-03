@@ -7,7 +7,8 @@ import (
 
 	"github/SXsid/learn-idempotency/internal/handler"
 	"github/SXsid/learn-idempotency/internal/provider"
-	"github/SXsid/learn-idempotency/internal/repository/postgres"
+	"github/SXsid/learn-idempotency/internal/repository/mock"
+	// "github/SXsid/learn-idempotency/internal/repository/postgres"
 	"github/SXsid/learn-idempotency/internal/service"
 	"github/SXsid/learn-idempotency/internal/store"
 
@@ -21,6 +22,7 @@ type Application struct {
 	db         *pgxpool.Pool
 	rdc        *redis.Client
 	payHandler *handler.PaymentHandler
+	idem       service.IdempotencyService
 }
 
 func NewApplicaton() *Application {
@@ -38,11 +40,11 @@ func NewApplicaton() *Application {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	redisStore := store.NewRedisStore(rdc)
+	redisStore := store.NewMockStore()
 	fmt.Println("redis connecteed.")
-	payRepo := postgres.NewPaymentRepo(db)
-	payProvider := provider.NewRazopayClient()
-	payService := service.NewPaymentService(payRepo, payProvider, redisStore)
+	payRepo := mock.NewMockRepo()
+	payProvider := provider.NewMockPayProvider()
+	payService := service.NewPaymentService(payRepo, payProvider)
 	payHandler := handler.NewPaymentHandler(payService)
 	app := &Application{
 		config:     config,
@@ -50,6 +52,7 @@ func NewApplicaton() *Application {
 		db:         db,
 		rdc:        rdc,
 		payHandler: payHandler,
+		idem:       redisStore,
 	}
 	return app
 }

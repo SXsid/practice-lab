@@ -9,15 +9,13 @@ import (
 	"github/SXsid/learn-idempotency/internal/domain"
 	"github/SXsid/learn-idempotency/internal/provider"
 	"github/SXsid/learn-idempotency/internal/repository/mock"
-	"github/SXsid/learn-idempotency/internal/store"
 )
 
 func TestInitPayment_ConcurrentSameRequest_ShouldOnlyChargeOnce(t *testing.T) {
 	// arrange
 	repo := mock.NewMockRepo()
 	provider := provider.NewMockPayProvider()
-	store := store.NewMockStore()
-	svc := NewPaymentService(repo, provider, store)
+	svc := NewPaymentService(repo, provider)
 
 	const concurrency = 10
 	var wg sync.WaitGroup
@@ -29,8 +27,6 @@ func TestInitPayment_ConcurrentSameRequest_ShouldOnlyChargeOnce(t *testing.T) {
 			defer wg.Done()
 			res, err := svc.InitPayment(
 				context.Background(),
-				"idem_101",
-				"ac213516-7028-41a1-9202-d3f38d7e649d",
 				domain.CustomerID("cust_123"),
 				10050,
 				domain.Currency("INR"),
