@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Educational CPU Scheduling Simulator</title>
+    <style>
+      /* CSS Reset and Basics */
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        background: #f4f7f6;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1,
+      h2,
+      h3 {
+        color: #2c3e50;
+      }
+      h1 {
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+      }
+      .card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      /* Form Elements */
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+      }
+      .input-group label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+      .input-group input,
+      .input-group select {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      button {
+        background: #3498db;
+        color: #fff;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.2s;
+      }
+      button:hover {
+        background: #2980b9;
+      }
+      button:disabled {
+        background: #95a5a6;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+
+      /* Controls */
+      .controls-bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 15px;
+        background: #e8f4f8;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #3498db;
+      }
+
+      /* Tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+      }
+      th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      /* Badges */
+      .badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+        color: white;
+        display: inline-block;
+        text-align: center;
+        min-width: 60px;
+      }
+      .badge.ready {
+        background: #f39c12;
+      }
+      .badge.running {
+        background: #2ecc71;
+      }
+      .badge.waiting {
+        background: #e74c3c;
+      }
+      .badge.done {
+        background: #95a5a6;
+      }
+
+      /* Gantt Chart */
+      .gantt-core {
+        margin-bottom: 15px;
+      }
+      .gantt-title {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .gantt-track {
+        height: 40px;
+        background: #e9ecef;
+        border-radius: 4px;
+        display: flex;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid #ddd;
+      }
+      .gantt-block {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: bold;
+        color: white;
+        border-right: 1px solid rgba(255, 255, 255, 0.4);
+        box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* Stats */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+      }
+      .stat-box {
+        text-align: center;
+        padding: 15px;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+      }
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+      .stat-label {
+        font-size: 12px;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 5px;
+      }
+
+      /* Queues Visualizer */
+      .queue-viz {
+        margin-top: 10px;
+      }
+      .queue-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        padding: 8px;
+        min-height: 45px;
+      }
+      .queue-label {
+        font-weight: bold;
+        width: 120px;
+        flex-shrink: 0;
+        font-size: 13px;
+        color: #7f8c8d;
+        border-right: 2px solid #ddd;
+        padding-right: 10px;
+        margin-right: 10px;
+        text-align: right;
+      }
+      .queue-items {
+        display: flex;
+        gap: 8px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        flex-grow: 1;
+        align-items: center;
+      }
+      .queue-item {
+        padding: 6px 12px;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        white-space: nowrap;
+      }
+
+      /* Simulation Logs */
+      .logs-container {
+        height: 200px;
+        overflow-y: auto;
+        font-family: "Consolas", monospace;
+        font-size: 13px;
+        padding-right: 5px;
+      }
+      .logs-container::-webkit-scrollbar {
+        width: 8px;
+      }
+      .logs-container::-webkit-scrollbar-thumb {
+        background: #34495e;
+        border-radius: 4px;
+      }
+      .log-entry {
+        margin-bottom: 6px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 4px;
+        color: #ecf0f1;
+      }
+      .log-tick {
+        color: #f39c12;
+        font-weight: bold;
+        margin-right: 5px;
+      }
+
+      /* Explanation Panel */
+      .explanation {
+        background: #fff3cd;
+        padding: 15px;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .explanation code {
+        background: #ffeeba;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>CPU Scheduling Simulator</h1>
+
+      <div class="grid-2">
+        <div class="card">
+          <h2>1. Add Processes</h2>
+          <div class="grid-2" style="gap: 10px">
+            <div class="input-group">
+              <label>Process Name</label>
+              <input type="text" id="proc-name" value="P1" />
+            </div>
+            <div class="input-group">
+              <label>Burst Time (ticks)</label>
+              <input
+                type="number"
+                id="proc-burst"
+                value="10"
+                min="1"
+                max="100"
+              />
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Process Type</label>
+            <select id="proc-type">
+              <option value="CPU">CPU-Bound (Compute Heavy)</option>
+              <option value="IO">I/O-Bound (Frequent I/O Waits)</option>
+            </select>
+          </div>
+          <div style="margin-top: 15px">
+            <button onclick="addProcess()">+ Add Process</button>
+            <button
+              onclick="loadDemo()"
+              style="background: #7f8c8d; margin-left: 10px"
+            >
+              Load Demo Set
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>2. Configure & Control</h2>
+          <div class="input-group">
+            <label>Scheduling Algorithm</label>
+            <select id="algo-select" onchange="changeAlgorithm()">
+              <option value="RR">Round Robin (RR)</option>
+              <option value="MLFQ">Multi-Level Feedback Queue (MLFQ)</option>
+              <option value="CFS">
+                Completely Fair Scheduler (CFS - Simplified)
+              </option>
+            </select>
+          </div>
+
+          <div class="controls-bar">
+            <button id="btn-play" onclick="play()">▶ Play</button>
+            <button id="btn-pause" onclick="pause()" disabled>⏸ Pause</button>
+            <button id="btn-prev" onclick="prev()" disabled>⏮ Prev</button>
+            <button id="btn-step" onclick="step()">⏭ Step</button>
+            <button
+              onclick="resetSimulation()"
+              style="background: #e74c3c; margin-left: auto"
+            >
+              ↺ Reset
+            </button>
+            <div
+              style="
+                font-weight: bold;
+                font-size: 16px;
+                margin-left: 15px;
+                color: #2c3e50;
+              "
+            >
+              Tick:
+              <span id="tick-display" style="color: #3498db; font-size: 20px"
+                >0</span
+              >
+            </div>
+          </div>
+
+          <div class="explanation" id="algorithm-explanation">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Live Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-value" id="stat-cs">0</div>
+            <div class="stat-label">Context Switches</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="stat-avg-wait">0.0</div>
+            <div class="stat-label">Avg Wait Time</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="stat-avg-turn">0.0</div>
+            <div class="stat-label">Avg Turnaround</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="stat-done">0 / 0</div>
+            <div class="stat-label">Processes Done</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" style="overflow-x: auto">
+          <h2>Process State</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Process</th>
+                <th>Type</th>
+                <th>Burst</th>
+                <th>State</th>
+                <th>Wait</th>
+                <th>Turnaround</th>
+              </tr>
+            </thead>
+            <tbody id="process-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; color: #7f8c8d">
+                  No processes added yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2>Ready Queues Visualizer</h2>
+          <div style="font-size: 12px; color: #7f8c8d; margin-bottom: 10px">
+            Visual representation of the scheduler's ready queue(s). Cores will
+            pick the next available process from here based on the algorithm.
+          </div>
+          <div id="queues-container" class="queue-viz">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" style="background: #2c3e50; color: white">
+          <h2
+            style="
+              color: white;
+              border-bottom: 1px solid #34495e;
+              padding-bottom: 10px;
+              margin-top: 0;
+            "
+          >
+            System Logs
+          </h2>
+          <div class="logs-container" id="log-container">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin-top: 0">Gantt Chart (2 Cores)</h2>
+          <div class="gantt-core">
+            <div class="gantt-title"><span>Core 0</span></div>
+            <div class="gantt-track" id="gantt-track-0"></div>
+          </div>
+          <div class="gantt-core">
+            <div class="gantt-title"><span>Core 1</span></div>
+            <div class="gantt-track" id="gantt-track-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- STATE & CONSTANTS ---
+      const PROCESS_TYPES = { CPU: "CPU", IO: "IO" };
+      const STATES = {
+        READY: "READY",
+        RUNNING: "RUNNING",
+        WAITING: "WAITING",
+        DONE: "DONE",
+      };
+      const ALGORITHMS = { RR: "RR", MLFQ: "MLFQ", CFS: "CFS" };
+
+      let processIdCounter = 1;
+      let processes = [];
+      let cores = [
+        { id: 0, process: null },
+        { id: 1, process: null },
+      ];
+      let tick = 0;
+      let isRunning = false;
+      let simulationInterval = null;
+
+      let stats = { contextSwitches: 0 };
+      let currentAlgorithm = ALGORITHMS.RR;
+
+      // Queues
+      let readyQueue = [];
+      let mlfqQueues = [[], [], []]; // 3 levels for MLFQ
+      let waitingQueue = [];
+      let doneQueue = [];
+
+      // For Visualization & Logs
+      let ganttHistory = { 0: [], 1: [] };
+      let logs = [];
+      let stateHistory = []; // For the "Prev" functionality
+
+      // Explanations for educational purposes
+      const explanations = {
+        RR: "<strong>Round Robin (RR)</strong> uses a single queue. Each process gets a fixed time slice (quantum = 3 ticks). If it doesn't finish, it's preempted and put at the back of the queue. Simple and fair, but can have high turnaround times for long CPU jobs.",
+        MLFQ: "<strong>Multi-Level Feedback Queue (MLFQ)</strong> uses 3 queues with different priorities and quantums (Q0=2, Q1=4, Q2=8). Processes start at the top. If they use their full quantum, they demote to a lower priority. I/O processes that block often stay in higher queues, remaining highly responsive.",
+        CFS: "<strong>Completely Fair Scheduler (CFS)</strong> assigns CPU based on a 'virtual runtime' (<code>vruntime</code>). The process with the lowest vruntime runs next. Preemption occurs if another process in the queue has a strictly lower vruntime. Ensures ultimate fairness over time.",
+      };
+
+      // Initialize UI
+      updateExplanation();
+      updateUI();
+
+      // --- STATE MANAGEMENT ---
+
+      function addLog(msg) {
+        logs.push({ tick, msg });
+        if (logs.length > 100) logs.shift(); // Keep last 100 logs
+      }
+
+      function cloneState() {
+        // Deep clone the processes
+        const clonedProcesses = processes.map((p) => ({ ...p }));
+        const findP = (id) =>
+          id === null ? null : clonedProcesses.find((p) => p.id === id);
+
+        // Deep clone the cores keeping reference to the new cloned processes
+        const clonedCores = cores.map((c) => ({
+          id: c.id,
+          process: c.process ? findP(c.process.id) : null,
+        }));
+
+        return {
+          processIdCounter,
+          tick,
+          stats: { ...stats },
+          processes: clonedProcesses,
+          cores: clonedCores,
+          readyQueue: readyQueue.map((p) => findP(p.id)),
+          mlfqQueues: mlfqQueues.map((q) => q.map((p) => findP(p.id))),
+          waitingQueue: waitingQueue.map((p) => findP(p.id)),
+          doneQueue: doneQueue.map((p) => findP(p.id)),
+          ganttHistory: JSON.parse(JSON.stringify(ganttHistory)), // Safe since it's plain objects
+          logs: logs.map((l) => ({ ...l })),
+        };
+      }
+
+      function restoreState(state) {
+        processIdCounter = state.processIdCounter;
+        tick = state.tick;
+        stats = { ...state.stats };
+        processes = state.processes;
+        cores = state.cores;
+        readyQueue = state.readyQueue;
+        mlfqQueues = state.mlfqQueues;
+        waitingQueue = state.waitingQueue;
+        doneQueue = state.doneQueue;
+        ganttHistory = state.ganttHistory;
+        logs = state.logs;
+        updateUI();
+      }
+
+      function prev() {
+        if (stateHistory.length > 0) {
+          const prevState = stateHistory.pop();
+          restoreState(prevState);
+        }
+      }
+
+      // --- SCHEDULING LOGIC (EDUCATIONAL) ---
+
+      /*
+       * schedule() is responsible for assigning READY processes to idle CPU cores.
+       */
+      function schedule() {
+        for (let core of cores) {
+          if (core.process === null) {
+            let nextProcess = null;
+
+            if (currentAlgorithm === ALGORITHMS.RR) {
+              nextProcess = scheduleRR();
+            } else if (currentAlgorithm === ALGORITHMS.MLFQ) {
+              nextProcess = scheduleMLFQ();
+            } else if (currentAlgorithm === ALGORITHMS.CFS) {
+              nextProcess = scheduleCFS();
+            }
+
+            if (nextProcess) {
+              core.process = nextProcess;
+              nextProcess.state = STATES.RUNNING;
+              nextProcess.quantumUsed = 0;
+              stats.contextSwitches++;
+
+              // Educational Logging
+              if (currentAlgorithm === ALGORITHMS.MLFQ) {
+                addLog(
+                  `Core ${core.id} picked ${nextProcess.name} from Q${nextProcess.priorityLevel}.`,
+                );
+              } else if (currentAlgorithm === ALGORITHMS.CFS) {
+                addLog(
+                  `Core ${core.id} picked ${nextProcess.name} (Lowest vruntime: ${nextProcess.vruntime}).`,
+                );
+              } else {
+                addLog(
+                  `Core ${core.id} picked ${nextProcess.name} from Ready Queue.`,
+                );
+              }
+            }
+          }
+        }
+      }
+
+      function scheduleRR() {
+        if (readyQueue.length > 0) return readyQueue.shift();
+        return null;
+      }
+
+      function scheduleMLFQ() {
+        for (let i = 0; i < 3; i++) {
+          if (mlfqQueues[i].length > 0) return mlfqQueues[i].shift();
+        }
+        return null;
+      }
+
+      function scheduleCFS() {
+        if (readyQueue.length === 0) return null;
+        readyQueue.sort((a, b) => a.vruntime - b.vruntime);
+        return readyQueue.shift();
+      }
+
+      function shouldPreempt(p, algorithm) {
+        if (algorithm === ALGORITHMS.RR) {
+          return p.quantumUsed >= 3;
+        } else if (algorithm === ALGORITHMS.MLFQ) {
+          const quantum =
+            p.priorityLevel === 0 ? 2 : p.priorityLevel === 1 ? 4 : 8;
+          return p.quantumUsed >= quantum;
+        } else if (algorithm === ALGORITHMS.CFS) {
+          if (p.quantumUsed >= 2 && readyQueue.length > 0) {
+            let minVruntime = Math.min(...readyQueue.map((pr) => pr.vruntime));
+            if (minVruntime < p.vruntime) return true;
+          }
+          return p.quantumUsed >= 6;
+        }
+        return false;
+      }
+
+      function enqueueReady(p) {
+        if (currentAlgorithm === ALGORITHMS.MLFQ) {
+          mlfqQueues[p.priorityLevel].push(p);
+        } else {
+          readyQueue.push(p);
+        }
+      }
+
+      // --- CORE SIMULATION ENGINE ---
+
+      function step() {
+        if (processes.length > 0 && processes.length === doneQueue.length) {
+          pause();
+          return;
+        }
+
+        // Save state BEFORE modifying it so we can step backwards
+        stateHistory.push(cloneState());
+
+        tick++;
+
+        // 1. Process waiting queue (I/O operations completing)
+        let nextWaitingQueue = [];
+        for (let p of waitingQueue) {
+          p.waitTimer--;
+          p.totalWaitTime++;
+
+          if (p.waitTimer <= 0) {
+            p.state = STATES.READY;
+
+            if (currentAlgorithm === ALGORITHMS.MLFQ) {
+              p.priorityLevel = 0;
+              addLog(`${p.name} I/O complete. Priority Boosted back to Q0.`);
+            } else {
+              addLog(`${p.name} I/O complete. Moved to Ready Queue.`);
+            }
+
+            enqueueReady(p);
+          } else {
+            nextWaitingQueue.push(p);
+          }
+        }
+        waitingQueue = nextWaitingQueue;
+
+        // 2. Process ready queue waiting times (For statistics)
+        if (currentAlgorithm === ALGORITHMS.MLFQ) {
+          mlfqQueues.forEach((q) => q.forEach((p) => p.totalWaitTime++));
+        } else {
+          readyQueue.forEach((p) => p.totalWaitTime++);
+        }
+
+        // 3. Process running processes on Cores
+        for (let core of cores) {
+          if (core.process) {
+            let p = core.process;
+            p.remainingBurst--;
+            p.vruntime += 1;
+            p.quantumUsed++;
+
+            // Update Gantt Chart History
+            let history = ganttHistory[core.id];
+            let lastEntry = history[history.length - 1];
+            if (lastEntry && lastEntry.processId === p.id) {
+              lastEntry.endTick = tick;
+            } else {
+              history.push({
+                processId: p.id,
+                name: p.name,
+                startTick: tick - 1,
+                endTick: tick,
+                color: p.color,
+              });
+            }
+
+            // State Machine for Running Process
+            if (p.remainingBurst <= 0) {
+              p.state = STATES.DONE;
+              p.turnaroundTime = tick - p.arrivalTime;
+              doneQueue.push(p);
+              addLog(
+                `${p.name} finished executing. (Turnaround: ${p.turnaroundTime}t)`,
+              );
+              core.process = null;
+            } else if (p.type === PROCESS_TYPES.IO && Math.random() < 0.15) {
+              p.state = STATES.WAITING;
+              p.waitTimer = Math.floor(Math.random() * 3) + 1;
+              waitingQueue.push(p);
+              addLog(
+                `${p.name} blocked for I/O (${p.waitTimer}t). Yielding Core ${core.id}.`,
+              );
+              core.process = null;
+            } else if (shouldPreempt(p, currentAlgorithm)) {
+              p.state = STATES.READY;
+
+              // Educational Logging for Preemption
+              if (currentAlgorithm === ALGORITHMS.MLFQ) {
+                if (p.priorityLevel < 2) {
+                  p.priorityLevel++;
+                  addLog(
+                    `${p.name} preempted (used full quantum). Demoted to Q${p.priorityLevel}.`,
+                  );
+                } else {
+                  addLog(
+                    `${p.name} preempted (used full quantum). Re-queued in Q2.`,
+                  );
+                }
+              } else if (currentAlgorithm === ALGORITHMS.CFS) {
+                addLog(
+                  `${p.name} preempted (Another process has a strictly lower vruntime).`,
+                );
+              } else {
+                addLog(
+                  `${p.name} preempted (Time quantum expired). Moved to back of Ready Queue.`,
+                );
+              }
+
+              enqueueReady(p);
+              core.process = null;
+            }
+          } else {
+            // Log Idle time for the Gantt chart
+            let history = ganttHistory[core.id];
+            let lastEntry = history[history.length - 1];
+            if (lastEntry && lastEntry.processId === null) {
+              lastEntry.endTick = tick;
+            } else {
+              history.push({
+                processId: null,
+                name: "",
+                startTick: tick - 1,
+                endTick: tick,
+                color: "#ecf0f1",
+              });
+            }
+          }
+        }
+
+        // 4. Fill empty cores
+        schedule();
+
+        // 5. Render
+        updateUI();
+      }
+
+      // --- UI AND CONTROLS ---
+
+      function addProcess() {
+        const nameInput = document.getElementById("proc-name");
+        const burstInput = document.getElementById("proc-burst");
+        const typeInput = document.getElementById("proc-type");
+
+        if (!nameInput.value || !burstInput.value)
+          return alert("Please enter name and burst time.");
+
+        const newProcess = {
+          id: processIdCounter++,
+          name: nameInput.value,
+          totalBurst: parseInt(burstInput.value, 10),
+          remainingBurst: parseInt(burstInput.value, 10),
+          type: typeInput.value,
+          color: getRandomColor(),
+
+          state: STATES.READY,
+          waitTimer: 0,
+          totalWaitTime: 0,
+          turnaroundTime: 0,
+
+          vruntime: 0,
+          priorityLevel: 0,
+          quantumUsed: 0,
+          arrivalTime: tick,
+        };
+
+        if (tick > 0) {
+          stateHistory.push(cloneState());
+          addLog(`User dynamically added process ${newProcess.name}.`);
+        } else {
+          stateHistory = [];
+          logs = [];
+        }
+
+        processes.push(newProcess);
+        enqueueReady(newProcess);
+
+        nameInput.value = `P${processIdCounter}`; // auto-increment next name
+        updateUI();
+      }
+
+      function loadDemo() {
+        if (tick > 0 || processes.length > 0) resetSimulation();
+
+        const demoProcs = [
+          { name: "P1 (CPU)", burst: 20, type: "CPU" },
+          { name: "P2 (I/O)", burst: 8, type: "IO" },
+          { name: "P3 (CPU)", burst: 15, type: "CPU" },
+          { name: "P4 (I/O)", burst: 5, type: "IO" },
+        ];
+
+        demoProcs.forEach((p) => {
+          document.getElementById("proc-name").value = p.name;
+          document.getElementById("proc-burst").value = p.burst;
+          document.getElementById("proc-type").value = p.type;
+          addProcess();
+        });
+      }
+
+      function play() {
+        if (processes.length === 0) return alert("Add some processes first!");
+        if (processes.length === doneQueue.length) resetSimulation();
+
+        isRunning = true;
+        updateButtons();
+
+        simulationInterval = setInterval(() => {
+          step();
+          if (processes.length === doneQueue.length) {
+            pause();
+          }
+        }, 400);
+      }
+
+      function pause() {
+        isRunning = false;
+        clearInterval(simulationInterval);
+        updateButtons();
+      }
+
+      function updateButtons() {
+        document.getElementById("btn-play").disabled = isRunning;
+        document.getElementById("btn-pause").disabled = !isRunning;
+        document.getElementById("btn-step").disabled = isRunning;
+        document.getElementById("btn-prev").disabled =
+          isRunning || stateHistory.length === 0;
+      }
+
+      function resetSimulation() {
+        pause();
+        tick = 0;
+        stats.contextSwitches = 0;
+        cores.forEach((c) => (c.process = null));
+        readyQueue = [];
+        mlfqQueues = [[], [], []];
+        waitingQueue = [];
+        doneQueue = [];
+        ganttHistory = { 0: [], 1: [] };
+        stateHistory = [];
+        logs = [];
+
+        processes.forEach((p) => {
+          p.remainingBurst = p.totalBurst;
+          p.state = STATES.READY;
+          p.waitTimer = 0;
+          p.totalWaitTime = 0;
+          p.turnaroundTime = 0;
+          p.vruntime = 0;
+          p.priorityLevel = 0;
+          p.quantumUsed = 0;
+          p.arrivalTime = 0;
+          enqueueReady(p);
+        });
+
+        updateUI();
+      }
+
+      function changeAlgorithm() {
+        currentAlgorithm = document.getElementById("algo-select").value;
+        updateExplanation();
+        resetSimulation();
+      }
+
+      function updateExplanation() {
+        document.getElementById("algorithm-explanation").innerHTML =
+          explanations[currentAlgorithm];
+      }
+
+      function updateUI() {
+        document.getElementById("tick-display").innerText = tick;
+        updateButtons();
+
+        // Process Table
+        const tbody = document.getElementById("process-table-body");
+        tbody.innerHTML = "";
+        processes.forEach((p) => {
+          let badgeClass = p.state.toLowerCase();
+          let tr = document.createElement("tr");
+
+          let waitStr =
+            p.state === STATES.WAITING
+              ? `<br><small style="color:#e74c3c">I/O Wait: ${p.waitTimer}t</small>`
+              : "";
+          let mlfqStr =
+            currentAlgorithm === ALGORITHMS.MLFQ
+              ? `<small style="display:block;color:#7f8c8d">Queue: Q${p.priorityLevel}</small>`
+              : "";
+
+          tr.innerHTML = `
+            <td style="font-weight:bold;">
+                <span style="display:inline-block;width:12px;height:12px;background:${p.color};border-radius:50%;margin-right:8px;vertical-align:middle;"></span>
+                ${p.name}
+                ${mlfqStr}
+            </td>
+            <td>${p.type}</td>
+            <td>${p.remainingBurst} / ${p.totalBurst}</td>
+            <td><span class="badge ${badgeClass}">${p.state}</span>${waitStr}</td>
+            <td>${p.totalWaitTime}</td>
+            <td>${p.state === STATES.DONE ? p.turnaroundTime : "-"}</td>
+        `;
+          tbody.appendChild(tr);
+        });
+
+        if (processes.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="6" style="text-align: center; color: #7f8c8d;">No processes added yet.</td></tr>';
+        }
+
+        // Ready Queues Visualizer
+        const queuesContainer = document.getElementById("queues-container");
+        queuesContainer.innerHTML = "";
+
+        if (currentAlgorithm === ALGORITHMS.MLFQ) {
+          for (let i = 0; i < 3; i++) {
+            let quantum = i === 0 ? 2 : i === 1 ? 4 : 8;
+            let row = document.createElement("div");
+            row.className = "queue-row";
+            row.innerHTML = `<div class="queue-label">Q${i} (Q=${quantum})</div><div class="queue-items"></div>`;
+            let itemsDiv = row.querySelector(".queue-items");
+
+            mlfqQueues[i].forEach((p) => {
+              let pDiv = document.createElement("div");
+              pDiv.className = "queue-item";
+              pDiv.style.backgroundColor = p.color;
+              pDiv.innerText = p.name;
+              itemsDiv.appendChild(pDiv);
+            });
+
+            if (mlfqQueues[i].length === 0) {
+              itemsDiv.innerHTML =
+                '<span style="color:#bdc3c7; font-size:12px; font-style:italic;">Empty</span>';
+            }
+            queuesContainer.appendChild(row);
+          }
+        } else {
+          let title =
+            currentAlgorithm === ALGORITHMS.RR
+              ? "Ready Queue"
+              : "Ready Queue (By vruntime)";
+          let row = document.createElement("div");
+          row.className = "queue-row";
+          row.innerHTML = `<div class="queue-label">${title}</div><div class="queue-items"></div>`;
+          let itemsDiv = row.querySelector(".queue-items");
+
+          readyQueue.forEach((p) => {
+            let pDiv = document.createElement("div");
+            pDiv.className = "queue-item";
+            pDiv.style.backgroundColor = p.color;
+            let extra =
+              currentAlgorithm === ALGORITHMS.CFS ? ` (v:${p.vruntime})` : "";
+            pDiv.innerText = p.name + extra;
+            itemsDiv.appendChild(pDiv);
+          });
+
+          if (readyQueue.length === 0) {
+            itemsDiv.innerHTML =
+              '<span style="color:#bdc3c7; font-size:12px; font-style:italic;">Empty</span>';
+          }
+          queuesContainer.appendChild(row);
+        }
+
+        // System Logs
+        const logContainer = document.getElementById("log-container");
+        logContainer.innerHTML = "";
+        if (logs.length === 0) {
+          logContainer.innerHTML =
+            '<div style="color:#7f8c8d; font-style:italic; text-align:center; padding-top:40px;">System ready. Start the simulation to see detailed logs...</div>';
+        } else {
+          logs.forEach((l) => {
+            let div = document.createElement("div");
+            div.className = "log-entry";
+            div.innerHTML = `<span class="log-tick">[Tick ${l.tick}]</span> ${l.msg}`;
+            logContainer.appendChild(div);
+          });
+          logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Stats
+        document.getElementById("stat-cs").innerText = stats.contextSwitches;
+        let totalWait = 0,
+          totalTurn = 0,
+          doneCount = doneQueue.length;
+        processes.forEach((p) => {
+          totalWait += p.totalWaitTime;
+          if (p.state === STATES.DONE) totalTurn += p.turnaroundTime;
+        });
+        document.getElementById("stat-avg-wait").innerText = processes.length
+          ? (totalWait / processes.length).toFixed(1)
+          : "0.0";
+        document.getElementById("stat-avg-turn").innerText = doneCount
+          ? (totalTurn / doneCount).toFixed(1)
+          : "0.0";
+        document.getElementById("stat-done").innerText =
+          `${doneCount} / ${processes.length}`;
+
+        // Gantt Charts
+        for (let coreId = 0; coreId < 2; coreId++) {
+          const track = document.getElementById(`gantt-track-${coreId}`);
+          track.innerHTML = "";
+          let history = ganttHistory[coreId];
+
+          history.forEach((block) => {
+            let widthPercent =
+              ((block.endTick - block.startTick) / Math.max(tick, 1)) * 100;
+            let el = document.createElement("div");
+            el.className = "gantt-block";
+            el.style.width = `${widthPercent}%`;
+            el.style.backgroundColor = block.color;
+            if (block.processId !== null && widthPercent > 3)
+              el.innerText = block.name;
+            el.title = `${block.name || "IDLE"} (Tick ${block.startTick} - ${block.endTick})`;
+            track.appendChild(el);
+          });
+        }
+      }
+
+      // Helper: Generate visually distinct but pleasant colors
+      function getRandomColor() {
+        const hue = Math.floor(Math.random() * 360);
+        return `hsl(${hue}, 65%, 50%)`;
+      }
+    </script>
+  </body>
+</html>

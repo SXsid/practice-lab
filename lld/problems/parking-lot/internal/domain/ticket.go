@@ -2,8 +2,6 @@ package domain
 
 import (
 	"time"
-
-	"github.com/sethvargo/go-retry"
 )
 
 type TicketStatus string
