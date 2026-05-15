@@ -102,7 +102,9 @@ func IdempotecyMiddleware(idem service.IdempotencyService) func(http.Handler) ht
 			next.ServeHTTP(rc, r)
 			// INFO: cause it saved in reponse writer and body is not
 			rc.header = rc.Header().Clone()
-			if rc.statusCode >= 500 {
+			// INFO: in user error we delete so retry can happen || iif wrong we regisite the stept n outbox event and idempdcy will contiibue from there
+			// for handler iit's new as it was failed prev try
+			if rc.statusCode >= 400 {
 				idem.Delete(ctx, idem_id)
 				return
 			}

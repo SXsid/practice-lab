@@ -1,0 +1,34 @@
+
+# Version Control
+.git
+.gitignore
+
+# Dependencies (Install these inside the Dockerfile instead)
+node_modules/
+vendor/
+venv/
+.venv/
+
+# Environment and Secrets (CRITICAL for security)
+.env
+*.pem
+*.key
+secrets.json
+
+# Build Artifacts and Cache
+dist/
+build/
+*.pyc
+__pycache__/
+.cache/
+
+# Testing and Coverage
+tests/
+.coverage
+coverage/
+*.log
+
+# Docker Specifics
+Dockerfile
+.dockerignore
+docker-compose.yml

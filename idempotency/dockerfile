@@ -1,5 +1,5 @@
 FROM golang:1.25-alpine AS builder
-RUN adduser -D -u 1000 -g "" appuser
+RUN adduser -D -u 1000  appuser
 WORKDIR /app
 COPY go.sum go.mod ./
 RUN go mod download
