@@ -13,7 +13,6 @@ import (
 func NewRouter(app *app.Application) http.Handler {
 	chi := chi.NewRouter()
 	chi.Use(middleware.Recoverer)
-	chi.Use(middleware.Logger)
 	chi.Use(middlewares.Correlation)
 	chi.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		logger := middlewares.LoggerWithContext(r.Context(), app.Logger)

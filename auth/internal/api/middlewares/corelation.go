@@ -13,9 +13,12 @@ type corelationContextKey struct{}
 
 func Correlation(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		correlationID := uuid.NewString()
 		// INFO: don't use the build iint data type define custom type to avoid collison with other libs
 		// we use struct as it relally hard to be comon instead of type key stirng const colreco key =" conet"
+		correlationID := r.Header.Get("X-correlation-ID")
+		if correlationID == "" {
+			correlationID = uuid.NewString()
+		}
 		ctx := context.WithValue(r.Context(), corelationContextKey{}, correlationID)
 		// new r  as it also imutanle as the the context
 		r = r.WithContext(ctx)
