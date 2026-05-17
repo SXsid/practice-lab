@@ -8,7 +8,7 @@ import (
 )
 
 type RedisStore struct {
-	client *redis.Client
+	*redis.Client
 }
 
 func NewRedisStore(ctx context.Context, addr, password string) (*RedisStore, error) {
@@ -25,11 +25,11 @@ func NewRedisStore(ctx context.Context, addr, password string) (*RedisStore, err
 	}
 
 	log.Println("Connected to Redis")
-	return &RedisStore{client: client}, nil
+	return &RedisStore{Client: client}, nil
 }
 
 // chain data use hset inseted of set for storing json
 // if it's a lbog stick with set
 func (s *RedisStore) Close() error {
-	return s.client.Close()
+	return s.Close()
 }
