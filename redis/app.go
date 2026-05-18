@@ -43,10 +43,7 @@ func (a *App) setupRoutes() {
 	a.Router.Post("/set/{id}", a.SetUser)
 	a.Router.Get("/hset/{id}", a.HGetUser)
 	a.Router.Post("/hset/{id}", a.HSetUser)
-
-	// Example Leaderboard routes
-	a.Router.Post("/leaderboard", a.handleUpdateScore)
-	a.Router.Get("/leaderboard", a.handleGetLeaderboard)
+	a.LeaderBoradRouter()
 }
 
 func (a *App) handleUpdateScore(w http.ResponseWriter, r *http.Request) {
