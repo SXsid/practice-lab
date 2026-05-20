@@ -1,0 +1,271 @@
+/* ── Reset & base ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #ffffff;
+  --surface: #f5f5f5;
+  --border: #e8e8e8;
+  --text: #111111;
+  --muted: #888888;
+  --accent: #111111;
+  --radius: 12px;
+  --font: "DM Sans", system-ui, sans-serif;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap");
+
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Shell (centered card) ────────────────────────────────── */
+.shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* ── Views ────────────────────────────────────────────────── */
+.view {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  animation: fadeUp 0.25s ease both;
+}
+.view.active {
+  display: flex;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Welcome view ─────────────────────────────────────────── */
+.logo {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ── Input row ────────────────────────────────────────────── */
+.field {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 15px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+input[type="text"]:focus {
+  border-color: var(--accent);
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius);
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
+}
+button:active {
+  transform: scale(0.97);
+}
+
+#btn-start {
+  padding: 11px 20px;
+  background: var(--accent);
+  color: #fff;
+}
+#btn-start:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Error ────────────────────────────────────────────────── */
+.error {
+  color: #e53e3e;
+  font-size: 13px;
+  width: 100%;
+  text-align: left;
+}
+.hidden {
+  display: none !important;
+}
+
+/* ── Avatar ───────────────────────────────────────────────── */
+.avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+/* ── Token card ───────────────────────────────────────────── */
+.token-card {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  text-align: left;
+}
+
+.token-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--muted);
+}
+
+.token-value {
+  font-size: 12px;
+  font-family: "Courier New", monospace;
+  color: var(--text);
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+.btn-icon:hover {
+  background: var(--border);
+}
+
+/* ── Incoming notification toast ─────────────────────────── */
+#notif-area {
+  width: 100%;
+}
+
+.notif-toast {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  text-align: left;
+  animation: fadeUp 0.2s ease both;
+  margin-top: 8px;
+}
+.notif-toast .nt-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.notif-toast .nt-body {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Ghost button ─────────────────────────────────────────── */
+.btn-ghost {
+  background: none;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 4px 0;
+  margin-top: 8px;
+  border: none;
+}
+.btn-ghost:hover {
+  color: var(--text);
+}
+
+/* ── Spinner ──────────────────────────────────────────────── */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#loading-msg {
+  color: var(--muted);
+  font-size: 14px;
+}

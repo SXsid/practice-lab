@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notify</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <!-- Initial state: user hasn't entered name yet -->
+      <div id="view-welcome" class="view active">
+        <div class="logo">🔔</div>
+        <h1>Notify</h1>
+        <p class="sub">Enter your ID to get started</p>
+        <div class="field">
+          <input
+            id="input-name"
+            type="text"
+            placeholder="Your ID"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="btn-start">Go</button>
+        </div>
+        <p id="error-msg" class="error hidden"></p>
+      </div>
+
+      <!-- Profile state: permission granted, token shown -->
+      <div id="view-profile" class="view">
+        <div class="avatar" id="avatar-initials">AB</div>
+        <h2 id="profile-name">Name</h2>
+        <p class="sub">Push notifications active</p>
+
+        <div class="token-card">
+          <span class="token-label">FCM Token</span>
+          <span id="token-value" class="token-value">—</span>
+          <button id="btn-copy" class="btn-icon" title="Copy token">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path
+                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+              />
+            </svg>
+            <span>Copy</span>
+          </button>
+        </div>
+
+        <div id="notif-area"></div>
+
+        <button id="btn-logout" class="btn-ghost">← Start over</button>
+      </div>
+
+      <!-- Loading overlay -->
+      <div id="view-loading" class="view">
+        <div class="spinner"></div>
+        <p id="loading-msg">Requesting permission…</p>
+      </div>
+    </div>
+
+    <!-- Firebase compat SDKs (v9 compat, served from CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
