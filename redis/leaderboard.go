@@ -16,7 +16,6 @@ func (app *App) LeaderBoradRouter() {
 	app.Router.Get("/leaderBoard/{user_id}/rank", app.GetUserRankFromLeaderBoard)
 }
 
-// can easily repalced by atomic updae in postgress
 func (app *App) ViewPostById(w http.ResponseWriter, r *http.Request) {
 	count, err := app.redis.Incr(r.Context(), fmt.Sprintf("post:%s", chi.URLParam(r, "id"))).Result()
 	if err != nil {
