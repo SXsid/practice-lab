@@ -36,6 +36,9 @@ func (app *App) SendNotificaion(w http.ResponseWriter, r *http.Request) {
 		}
 		Tres, err := firebaseClient.Send(ctx, &msg)
 		if err != nil {
+			switch err {
+			// case firebaseClient.
+			}
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 
 			return
