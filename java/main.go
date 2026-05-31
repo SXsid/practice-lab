@@ -2,36 +2,32 @@ package main
 
 import "fmt"
 
-type Institute struct{}
-
-func (i Institute) Teach() {
-	fmt.Println("Teaches")
+type NotifcationProvider interface {
+	send(msg string)
+}
+type NotifcationServie struct {
+	provider NotifcationProvider
 }
 
-type College struct {
-	Institute
+func NewNotifcatService(provider NotifcationProvider) *NotifcationServie {
+	return &NotifcationServie{
+		provider: provider,
+	}
 }
 
-func (c College) Sports() {
-	fmt.Println("College Sports")
+type sms struct{}
+
+func (s *sms) send(msg string) {
+	fmt.Println("sms sedning")
 }
 
-func (c College) Reserach() {
-	fmt.Println("Research college")
-}
+type email struct{}
 
-// compositotn over inherticae  abstraic achive by iinteface
-type Uni struct {
-	College
-}
-
-func (u Uni) Reserach() {
-	fmt.Println("uni Research college")
+func (e *email) send(msg string) {
+	fmt.Println("email sedning")
 }
 
 func main() {
-	uni := Uni{}
-	uni.Teach()
-	uni.Reserach()
-	uni.Sports()
+	NewNotifcatService(&email{}).provider.send("hi")
+	NewNotifcatService(&sms{}).provider.send("hi")
 }
