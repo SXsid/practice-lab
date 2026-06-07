@@ -81,9 +81,10 @@ func main() {
 
 		// TODO: Launch goroutine for concurrent handling
 
+		// BUG: it's improtant it's ousdie (if we put it inside may be when wg.wait is kicketthe  count could be 0 )
+		wg.Add(1)
 		go func(msg Message) {
 			defer wg.Done()
-			wg.Add(1)
 			node.HandleMessage(msg)
 		}(msg)
 
