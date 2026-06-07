@@ -43,11 +43,35 @@ func (n *Node) Reply(request Message, body map[string]interface{}) {
 	n.Send(request.Src, body)
 }
 
+func (node *Node) HandleMessage(msg Message) {
+	// TODO: Handle message
+	// This function will be called from a goroutine
+	msgType, _ := msg.Body["type"].(string)
+	switch msgType {
+	case "init":
+		node.NodeID, _ = msg.Body["node_id"].(string)
+		if ids, ok := msg.Body["node_ids"].([]interface{}); ok {
+			for _, id := range ids {
+				node.NodeIDs = append(node.NodeIDs, id.(string))
+			}
+		}
+		node.Reply(msg, map[string]interface{}{"type": "init_ok"})
+	case "echo":
+		// TODO: Handle echo message
+		// Reply with echo_ok containing the same echo value
+		echo, _ := msg.Body["echo"].(string)
+		node.Reply(msg, map[string]interface{}{"type": "echo_ok", "echo": echo})
+	}
+}
+
 func main() {
 	node := &Node{}
 	scanner := bufio.NewScanner(os.Stdin)
+	var wg sync.WaitGroup
 
-	// ifinte wiat read call move when we hve the data and read line by line
+	// TODO: Implement concurrent message handling
+	// Use goroutines to handle messages concurrently
+
 	for scanner.Scan() {
 		var msg Message
 		if err := json.Unmarshal(scanner.Bytes(), &msg); err != nil {
@@ -55,22 +79,15 @@ func main() {
 			continue
 		}
 
-		msgType, _ := msg.Body["type"].(string)
-		switch msgType {
-		case "init":
-			node.NodeID, _ = msg.Body["node_id"].(string)
-			if ids, ok := msg.Body["node_ids"].([]interface{}); ok {
-				for _, id := range ids {
-					node.NodeIDs = append(node.NodeIDs, id.(string))
-				}
-			}
-			node.Reply(msg, map[string]interface{}{"type": "init_ok"})
-		case "echo":
-			// TODO: Handle echo message
-			// Reply with echo_ok containing the same echo value
-			echo, _ := msg.Body["echo"].(string)
-			node.Reply(msg, map[string]interface{}{"type": "echo_ok", "echo": echo})
+		// TODO: Launch goroutine for concurrent handling
 
-		}
+		go func(msg Message) {
+			defer wg.Done()
+			wg.Add(1)
+			node.HandleMessage(msg)
+		}(msg)
+
+		// Currently synchronous
 	}
+	wg.Wait()
 }

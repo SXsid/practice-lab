@@ -9,9 +9,9 @@ import (
 
 // Message represents a Maelstrom message
 type Message struct {
-	Src  string                 `json:"src"`
-	Dest string                 `json:"dest"`
-	Body map[string]interface{} `json:"body"`
+	Src  string         `json:"src"`
+	Dest string         `json:"dest"`
+	Body map[string]any `json:"body"`
 }
 
 func main() {

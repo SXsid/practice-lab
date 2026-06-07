@@ -43,15 +43,34 @@ func (n *Node) Reply(request Message, body map[string]interface{}) {
 	n.Send(request.Src, body)
 }
 
+// ValidateMessage checks if a message has required structure
+func ValidateMessage(msg Message) (bool, string) {
+	// TODO: Validate message structure
+	// Return true if valid, false with error message otherwise
+	if msg.Body == nil || msg.Src == "" || msg.Dest == "" {
+		return false, "input is not valid"
+	}
+	if _, ok := msg.Body["type"]; !ok {
+		return ok, "type filed is missing from body"
+	}
+
+	return true, ""
+}
+
 func main() {
 	node := &Node{}
 	scanner := bufio.NewScanner(os.Stdin)
 
-	// ifinte wiat read call move when we hve the data and read line by line
 	for scanner.Scan() {
 		var msg Message
 		if err := json.Unmarshal(scanner.Bytes(), &msg); err != nil {
-			fmt.Fprintln(os.Stderr, "Error:", err)
+			fmt.Fprintln(os.Stderr, "Invalid JSON:", err)
+			continue
+		}
+
+		// TODO: Validate message before processing
+		if valid, errMsg := ValidateMessage(msg); !valid {
+			fmt.Fprintln(os.Stderr, "Validation error:", errMsg)
 			continue
 		}
 
@@ -66,11 +85,10 @@ func main() {
 			}
 			node.Reply(msg, map[string]interface{}{"type": "init_ok"})
 		case "echo":
-			// TODO: Handle echo message
-			// Reply with echo_ok containing the same echo value
-			echo, _ := msg.Body["echo"].(string)
-			node.Reply(msg, map[string]interface{}{"type": "echo_ok", "echo": echo})
-
+			node.Reply(msg, map[string]interface{}{
+				"type": "echo_ok",
+				"echo": msg.Body["echo"],
+			})
 		}
 	}
 }
