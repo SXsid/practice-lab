@@ -12,13 +12,13 @@ var (
 	ErrNotFound         = errors.New("not found")
 )
 
-func Resolve(err error) int {
+func Resolve(err error) (int, string) {
 	switch {
-	case errors.Is(err, ErrIvalidFields), errors.Is(err, ErrEmailAlredyExist):
-		return http.StatusUnprocessableEntity
-	case errors.Is(err, ErrServer):
-		return http.StatusInternalServerError
+	case errors.Is(err, ErrIvalidFields):
+		return http.StatusUnprocessableEntity, ErrIvalidFields.Error()
+	case errors.Is(err, ErrEmailAlredyExist):
+		return http.StatusUnprocessableEntity, ErrEmailAlredyExist.Error()
 	default:
-		return http.StatusInternalServerError
+		return http.StatusInternalServerError, ErrServer.Error()
 	}
 }

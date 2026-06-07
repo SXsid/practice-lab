@@ -29,9 +29,9 @@ func WriteResp(w http.ResponseWriter, statusCode int, msg string, body any) {
 func WriteErr(w http.ResponseWriter, err error) {
 	// log the acutl error
 	fmt.Println(err.Error())
-	code := Resolve(err)
+	code, msg := Resolve(err)
 	resp := ErrResponse{
-		Error: err.Error(),
+		Error: msg,
 	}
 	b, _ := json.Marshal(resp)
 	w.WriteHeader(code)

@@ -13,9 +13,6 @@ func NewUserRepo() *UserRepo {
 }
 
 func (u *UserRepo) AddUser(user *User) error {
-	if _, ok := u.data[user.email]; ok {
-		return fmt.Errorf("userRepo:AddUser:%w", ErrEmailAlredyExist)
-	}
 	u.data[user.email] = user
 	return nil
 }

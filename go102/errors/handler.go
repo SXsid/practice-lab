@@ -2,34 +2,12 @@ package err
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
-	"strings"
 )
 
 type CreateUserRequest struct {
-	Email    string `json:"email"`
-	UserName string `json:"user_name"`
-}
-
-func (c *CreateUserRequest) Validate() error {
-	var ers []error
-	if c.Email == "" || !strings.Contains(c.Email, "@") {
-		ers = append(ers, fmt.Errorf("email is not valid or empty"))
-	}
-	if len(c.UserName) < 5 {
-		ers = append(ers, fmt.Errorf("len of username can't be less than 5"))
-	}
-	if len(ers) > 0 {
-		res := []error{
-			ErrIvalidFields,
-		}
-
-		res = append(res, ers...)
-		return errors.Join(res...)
-	}
-	return nil
+	Email    string `json:"email"  validate:"required,email"`
+	UserName string `json:"user_name" validate:"required,min=5,max=30"`
 }
 
 func (app *App) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +16,7 @@ func (app *App) CreateUser(w http.ResponseWriter, r *http.Request) {
 		WriteErr(w, ErrIvalidFields)
 		return
 	}
-	if err := req.Validate(); err != nil {
+	if err := app.validator.Struct(req); err != nil {
 		WriteErr(w, err)
 		return
 	}
