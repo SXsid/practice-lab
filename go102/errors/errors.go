@@ -8,10 +8,12 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// use sential errors to wrap the externs services error
 var (
 	ErrIvalidFields     = errors.New("ivalid inputs")
 	ErrEmailAlredyExist = errors.New("email is already in use")
 	ErrServer           = errors.New("server error occured")
+	ErrTimeout          = errors.New("timeout occured while processing your request")
 	ErrNotFound         = errors.New("not found")
 )
 
@@ -28,6 +30,8 @@ func Resolve(err error) (int, string) {
 		return http.StatusConflict, ErrEmailAlredyExist.Error()
 	case errors.As(err, &validator.ValidationErrors{}):
 		return http.StatusUnprocessableEntity, ErrIvalidFields.Error()
+	case errors.Is(err, ErrTimeout):
+		return http.StatusServiceUnavailable, ErrTimeout.Error()
 	default:
 		return http.StatusInternalServerError, ErrServer.Error()
 	}

@@ -1,8 +1,10 @@
 package err
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 type CreateUserRequest struct {
@@ -20,8 +22,11 @@ func (app *App) CreateUser(w http.ResponseWriter, r *http.Request) {
 		WriteErr(w, err)
 		return
 	}
-	// here too to match the naem is a pattern used or not
-	if err := app.userservice.CreateUser(req.Email, req.UserName); err != nil {
+	// INFO:
+	// passs the reqq.context as if use discoone this wil be  trigger the context cancel internally
+	ctx, cancel := context.WithTimeout(r.Context(), time.Second*3)
+	defer cancel()
+	if err := app.userservice.CreateUser(ctx, req.Email, req.UserName); err != nil {
 		WriteErr(w, err)
 		return
 	}
