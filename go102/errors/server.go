@@ -23,9 +23,6 @@ type App struct {
 	validator   *validator.Validate
 }
 
-// TODO: https://www.youtube.com/watch?v=J1PDCaJrQG8
-// watch that work on error then respo and rest cycle
-// so couple of question soem coding the real interview perp
 func NewApp() *App {
 	router := http.NewServeMux()
 	app := &App{

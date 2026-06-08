@@ -23,7 +23,7 @@ func write(w http.ResponseWriter, code int, body any) {
 }
 
 func WriteErr(w http.ResponseWriter, err error) {
-	log.Printf("[error]:\n\t%w", err.Error())
+	log.Printf("[error]:\n\t%s", err.Error())
 	code, usrMessage := Resolve(err)
 	field := ExtractFields(err)
 	write(w, code, ApiResponse{
