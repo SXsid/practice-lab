@@ -2,38 +2,46 @@ package err
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 )
 
-type ErrResponse struct {
-	Error string `json:"error"`
+type ApiResponse struct {
+	Success bool          `json:"success"`
+	Message string        `json:"message,omitempty"`
+	Body    any           `json:"body,omitempty"`
+	Error   string        `json:"error,omitempty"`
+	Field   []FieldErrors `json:"fields,omitempty"`
 }
 
-type Response struct {
-	Message string `json:"msg"`
-	Body    any    `json:"body"`
-}
-
-// here i gues sthe funtio optional pttern can be used
-func WriteResp(w http.ResponseWriter, statusCode int, msg string, body any) {
-	resp := Response{
-		Message: msg,
-		Body:    body,
-	}
-	b, _ := json.Marshal(resp)
-	w.WriteHeader(statusCode)
+func write(w http.ResponseWriter, code int, body any) {
+	b, _ := json.Marshal(body)
+	w.Header().Set("Server", "go")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
 	w.Write(b)
 }
 
 func WriteErr(w http.ResponseWriter, err error) {
-	// log the acutl error
-	fmt.Println(err.Error())
-	code, msg := Resolve(err)
-	resp := ErrResponse{
-		Error: msg,
+	log.Printf("[error]:\n\t%w", err.Error())
+	code, usrMessage := Resolve(err)
+	field := ExtractFields(err)
+	write(w, code, ApiResponse{
+		Success: false,
+		Error:   usrMessage,
+		Field:   field,
+	})
+}
+
+func writeOk(w http.ResponseWriter, code int, msg string, body ...any) {
+	var data any
+	if len(body) > 0 {
+		data = body[0]
 	}
-	b, _ := json.Marshal(resp)
-	w.WriteHeader(code)
-	w.Write(b)
+
+	write(w, code, ApiResponse{
+		Success: true,
+		Message: msg,
+		Body:    data,
+	})
 }

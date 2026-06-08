@@ -25,5 +25,5 @@ func (app *App) CreateUser(w http.ResponseWriter, r *http.Request) {
 		WriteErr(w, err)
 		return
 	}
-	WriteResp(w, http.StatusCreated, "user created sucessfully", nil)
+	writeOk(w, http.StatusCreated, "user created sucessfully")
 }
