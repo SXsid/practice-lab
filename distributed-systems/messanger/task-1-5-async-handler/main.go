@@ -89,6 +89,6 @@ func main() {
 		}(msg)
 
 		// Currently synchronous
+		wg.Wait()
 	}
-	wg.Wait()
 }
