@@ -26,6 +26,7 @@ func (u *UserService) CreateUser(ctx context.Context, email, userName string) er
 		userName: userName,
 	}
 
+	// wrap into a traction so get user and user is in same
 	usr, err := u.repo.GetUser(ctx, email)
 	if err != nil && !errors.Is(err, ErrNotFound) {
 		return fmt.Errorf("userService:CreateUser:%w", err)
