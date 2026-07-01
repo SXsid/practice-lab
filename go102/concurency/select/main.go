@@ -27,7 +27,9 @@ func fetchUser(ctx context.Context, id int, ch chan<- Result) {
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*300)
 	defer cancel()
-	ch := make(chan Result)
+	// INFO:
+	// so we sender doesnt have to wait/stuck even wehn we close the reciver when erro get
+	ch := make(chan Result, 3)
 	go func() {
 		var wg sync.WaitGroup
 		for i := range 3 {
@@ -42,7 +44,7 @@ func main() {
 		u := res.u
 		if err := res.err; err != nil {
 			fmt.Println(err)
-			continue
+			break
 		}
 		fmt.Println(u.id)
 
