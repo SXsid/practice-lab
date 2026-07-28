@@ -10,5 +10,5 @@ const AlertValue=(count)=>{
 </script>
 
 <template>
-  <HelloWorld :name="name" v-on:countClicked="AlertValue" />
+  <HelloWorld :name="name" @countClicked="AlertValue" />
 </template>
