@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 
 class DayPlan(BaseModel):
+
     day: int
     activities: List[str]
 
